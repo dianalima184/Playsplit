@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PaySplit — Buy Now, Pay Later Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:       #4f46e5;
+      --brand-light: #eef2ff;
+      --brand-mid:   #818cf8;
+      --green:       #059669;
+      --green-light: #d1fae5;
+      --black:       #0f172a;
+      --gray-900:    #1e293b;
+      --gray-700:    #334155;
+      --gray-500:    #64748b;
+      --gray-300:    #cbd5e1;
+      --gray-200:    #e2e8f0;
+      --gray-100:    #f1f5f9;
+      --white:       #ffffff;
+      --border:      #e2e8f0;
+      --sans: 'Sora', sans-serif;
+      --radius: 12px;
+      --radius-lg: 20px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-lg: 0 4px 6px rgba(0,0,0,0.05), 0 16px 48px rgba(0,0,0,0.1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--gray-100);
+      color: var(--black);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .header-inner {
+      max-width: 1100px; margin: 0 auto;
+      height: 64px; display: flex;
+      align-items: center; justify-content: space-between;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--brand);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 18px; height: 18px; }
+    .logo-text { font-size: 1.1rem; font-weight: 700; color: var(--black); letter-spacing: -0.02em; }
+    .logo-text span { color: var(--brand); }
+    .header-badge {
+      font-size: 0.72rem; font-weight: 600;
+      background: var(--brand-light); color: var(--brand);
+      padding: 4px 12px; border-radius: 100px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      max-width: 1100px; margin: 0 auto;
+      width: 100%; padding: 3rem 2rem;
+    }
+
+    /* ── HERO TEXT ── */
+    .hero-text { text-align: center; margin-bottom: 3rem; }
+    .hero-text h1 {
+      font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+      font-weight: 700; letter-spacing: -0.03em;
+      line-height: 1.2; color: var(--black);
+      margin-bottom: 0.75rem;
+    }
+    .hero-text h1 span { color: var(--brand); }
+    .hero-text p { font-size: 1rem; color: var(--gray-500); max-width: 480px; margin: 0 auto; line-height: 1.7; }
+
+    /* ── LAYOUT ── */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* ── INPUT CARD ── */
+    .input-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .input-card-header {
+      padding: 1.5rem 1.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .input-card-header h2 {
+      font-size: 0.95rem; font-weight: 600; color: var(--black);
+      margin-bottom: 0.2rem;
+    }
+    .input-card-header p { font-size: 0.8rem; color: var(--gray-500); }
+    .input-card-body { padding: 1.75rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* AMOUNT INPUT */
+    .field-label {
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--gray-500); margin-bottom: 0.5rem;
+    }
+    .amount-wrap {
+      position: relative;
+    }
+    .amount-symbol {
+      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+      font-size: 1.2rem; font-weight: 600; color: var(--gray-400);
+      pointer-events: none;
+    }
+    .amount-input {
+      width: 100%;
+      padding: 0.875rem 1rem 0.875rem 2.25rem;
+      font-family: var(--sans);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--black);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      background: var(--white);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      letter-spacing: -0.02em;
+    }
+    .amount-input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px rgba(79,70,229,0.1);
+    }
+    .amount-input::placeholder { color: var(--gray-300); }
+
+    /* QUICK AMOUNTS */
+    .quick-amounts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.6rem; }
+    .quick-btn {
+      padding: 5px 14px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-btn:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-light); }
+
+    /* PLAN SELECTOR */
+    .plan-options { display: flex; flex-direction: column; gap: 10px; }
+    .plan-option {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.125rem;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--white);
+      user-select: none;
+    }
+    .plan-option:hover { border-color: var(--brand-mid); background: var(--brand-light); }
+    .plan-option.selected {
+      border-color: var(--brand);
+      background: var(--brand-light);
+    }
+    .plan-left { display: flex; align-items: center; gap: 12px; }
+    .plan-radio {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid var(--gray-300);
+      background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.15s;
+    }
+    .plan-option.selected .plan-radio {
+      border-color: var(--brand);
+      background: var(--brand);
+    }
+    .plan-option.selected .plan-radio::after {
+      content: '';
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--white);
+    }
+    .plan-label { font-size: 0.9rem; font-weight: 600; color: var(--black); }
+    .plan-sub { font-size: 0.75rem; color: var(--gray-500); margin-top: 1px; }
+    .plan-right { text-align: right; }
+    .plan-amount { font-size: 1.05rem; font-weight: 700; color: var(--black); letter-spacing: -0.02em; }
+    .plan-per { font-size: 0.72rem; color: var(--gray-500); }
+
+    /* ── RESULTS PANEL ── */
+    .results-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* SUMMARY CARD */
+    .summary-card {
+      background: var(--black);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+    }
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: rgba(79,70,229,0.3);
+      top: -100px; right: -80px;
+      pointer-events: none;
+    }
+    .summary-card::after {
+      content: '';
+      position: absolute;
+      width: 180px; height: 180px; border-radius: 50%;
+      background: rgba(79,70,229,0.15);
+      bottom: -60px; left: 30px;
+      pointer-events: none;
+    }
+    .summary-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 0.5rem; }
+    .summary-amount {
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-weight: 700; letter-spacing: -0.04em;
+      line-height: 1; margin-bottom: 0.35rem;
+      position: relative; z-index: 1;
+      transition: all 0.3s;
+    }
+    .summary-sub { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-bottom: 1.75rem; position: relative; z-index: 1; }
+    .summary-meta {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem; position: relative; z-index: 1;
+    }
+    .meta-item { }
+    .meta-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-bottom: 0.3rem; }
+    .meta-value { font-size: 1.05rem; font-weight: 600; color: var(--white); }
+
+    /* PAYMENT SCHEDULE */
+    .schedule-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .schedule-header {
+      padding: 1.25rem 1.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .schedule-header h3 { font-size: 0.9rem; font-weight: 600; }
+    .schedule-header .total-badge {
+      font-size: 0.78rem; font-weight: 600;
+      background: var(--green-light); color: var(--green);
+      padding: 4px 12px; border-radius: 100px;
+    }
+    .schedule-list { padding: 0.5rem 0; }
+    .schedule-row {
+      display: flex; align-items: center;
+      padding: 0.9rem 1.75rem;
+      border-bottom: 1px solid var(--gray-100);
+      gap: 1rem;
+      transition: background 0.1s;
+    }
+    .schedule-row:last-child { border-bottom: none; }
+    .schedule-row:hover { background: var(--gray-100); }
+    .schedule-row.first-row { background: rgba(79,70,229,0.03); }
+    .payment-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--brand-light); color: var(--brand);
+      font-size: 0.72rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .schedule-row.first-row .payment-num { background: var(--brand); color: var(--white); }
+    .payment-date { font-size: 0.85rem; color: var(--gray-500); flex: 1; }
+    .payment-date strong { display: block; color: var(--black); font-weight: 600; font-size: 0.875rem; }
+    .payment-amount { font-size: 1rem; font-weight: 700; color: var(--black); letter-spacing: -0.02em; }
+    .payment-tag {
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em;
+      padding: 3px 9px; border-radius: 100px;
+    }
+    .tag-today { background: var(--brand-light); color: var(--brand); }
+    .tag-upcoming { background: var(--gray-100); color: var(--gray-500); }
+
+    /* TRANSPARENCY BOX */
+    .transparency-card {
+      background: var(--green-light);
+      border: 1px solid #a7f3d0;
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .check-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--green);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .transparency-card h4 { font-size: 0.875rem; font-weight: 600; color: var(--green); margin-bottom: 0.2rem; }
+    .transparency-card p { font-size: 0.8rem; color: #065f46; line-height: 1.55; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 2rem;
+      font-size: 0.8rem; color: var(--gray-500);
+      border-top: 1px solid var(--border);
+      background: var(--white);
+    }
+    footer a { color: var(--brand); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+    }
+    .empty-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: var(--brand-light);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+    }
+    .empty-state h3 { font-size: 0.95rem; font-weight: 600; color: var(--black); margin-bottom: 0.35rem; }
+    .empty-state p { font-size: 0.82rem; color: var(--gray-500); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: fadeIn 0.25s ease forwards; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .app-layout { grid-template-columns: 1fr; }
+      main { padding: 2rem 1rem; }
+      .summary-meta { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="logo-text">Pay<span>Split</span></span>
+    </a>
+    <span class="header-badge">0% Interest &middot; No Hidden Fees</span>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+  <div class="hero-text">
+    <h1>Split any purchase into<br><span>easy payments</span></h1>
+    <p>Enter an amount and choose your plan. See exactly what you'll pay and when &mdash; transparent, honest, simple.</p>
+  </div>
+
+  <div class="app-layout">
+
+    <!-- INPUT CARD -->
+    <div class="input-card">
+      <div class="input-card-header">
+        <h2>Calculate Your Plan</h2>
+        <p>No interest. No fees. Ever.</p>
+      </div>
+      <div class="input-card-body">
+
+        <!-- AMOUNT -->
+        <div>
+          <div class="field-label">Purchase Amount</div>
+          <div class="amount-wrap">
+            <span class="amount-symbol">$</span>
+            <input
+              type="number"
+              class="amount-input"
+              id="amountInput"
+              placeholder="0.00"
+              min="1"
+              max="50000"
+              step="0.01"
+            />
+          </div>
+          <div class="quick-amounts">
+            <button class="quick-btn" data-amount="50">$50</button>
+            <button class="quick-btn" data-amount="100">$100</button>
+            <button class="quick-btn" data-amount="250">$250</button>
+            <button class="quick-btn" data-amount="500">$500</button>
+            <button class="quick-btn" data-amount="1000">$1,000</button>
+          </div>
+        </div>
+
+        <!-- PLAN -->
+        <div>
+          <div class="field-label">Payment Plan</div>
+          <div class="plan-options" id="planOptions">
+            <div class="plan-option selected" data-plan="4">
+              <div class="plan-left">
+                <div class="plan-radio"></div>
+                <div>
+                  <div class="plan-label">Pay in 4</div>
+                  <div class="plan-sub">Every 2 weeks &middot; 6 weeks total</div>
+                </div>
+              </div>
+              <div class="plan-right">
+                <div class="plan-amount" id="plan4amount">&mdash;</div>
+                <div class="plan-per">per payment</div>
+              </div>
+            </div>
+            <div class="plan-option" data-plan="6">
+              <div class="plan-left">
+                <div class="plan-radio"></div>
+                <div>
+                  <div class="plan-label">Pay in 6</div>
+                  <div class="plan-sub">Every 2 weeks &middot; 10 weeks total</div>
+                </div>
+              </div>
+              <div class="plan-right">
+                <div class="plan-amount" id="plan6amount">&mdash;</div>
+                <div class="plan-per">per payment</div>
+              </div>
+            </div>
+            <div class="plan-option" data-plan="12">
+              <div class="plan-left">
+                <div class="plan-radio"></div>
+                <div>
+                  <div class="plan-label">Pay in 12</div>
+                  <div class="plan-sub">Monthly &middot; 12 months total</div>
+                </div>
+              </div>
+              <div class="plan-right">
+                <div class="plan-amount" id="plan12amount">&mdash;</div>
+                <div class="plan-per">per payment</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RESULTS PANEL -->
+    <div class="results-panel" id="resultsPanel">
+
+      <!-- EMPTY STATE -->
+      <div class="schedule-card" id="emptyState">
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>Enter a purchase amount</h3>
+          <p>Your payment schedule will appear here with your exact due dates and amounts.</p>
+        </div>
+      </div>
+
+      <!-- RESULTS (hidden until amount entered) -->
+      <div id="resultsContent" style="display:none; flex-direction:column; gap:1.5rem;">
+
+        <!-- SUMMARY -->
+        <div class="summary-card">
+          <div class="summary-label">You pay today</div>
+          <div class="summary-amount" id="summaryAmount">$0.00</div>
+          <div class="summary-sub" id="summarySub">first of 4 payments</div>
+          <div class="summary-meta">
+            <div class="meta-item">
+              <div class="meta-label">Total</div>
+              <div class="meta-value" id="metaTotal">$0.00</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Payments</div>
+              <div class="meta-value" id="metaCount">4</div>
+            </div>
+            <div class="meta-item">
+              <div class="meta-label">Interest</div>
+              <div class="meta-value" style="color:#6ee7b7;">$0.00</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SCHEDULE -->
+        <div class="schedule-card">
+          <div class="schedule-header">
+            <h3>Payment Schedule</h3>
+            <span class="total-badge" id="scheduleTotal">Total: $0.00</span>
+          </div>
+          <div class="schedule-list" id="scheduleList"></div>
+        </div>
+
+        <!-- TRANSPARENCY -->
+        <div class="transparency-card">
+          <div class="check-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h4>No interest. No hidden fees. Guaranteed.</h4>
+            <p>The amount you see is exactly what you pay. PaySplit charges $0 in interest, late fees, or service charges. Built to show how honest BNPL should work.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>PaySplit &mdash; A project by <strong>Diana Lima</strong> &middot; Built for the <a href="../index.html">Affirm Software Engineer Apprenticeship</a></p>
+</footer>
+
+<script>
+  const amountInput = document.getElementById('amountInput');
+  const planOptions = document.querySelectorAll('.plan-option');
+  const emptyState  = document.getElementById('emptyState');
+  const resultsContent = document.getElementById('resultsContent');
+
+  let selectedPlan = 4;
+
+  // ── PLAN SELECTION ──
+  planOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      planOptions.forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      selectedPlan = parseInt(opt.dataset.plan);
+      calculate();
+    });
+  });
+
+  // ── QUICK AMOUNTS ──
+  document.querySelectorAll('.quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      amountInput.value = btn.dataset.amount;
+      calculate();
+    });
+  });
+
+  // ── INPUT ──
+  amountInput.addEventListener('input', calculate);
+
+  // ── FORMAT CURRENCY ──
+  function fmt(n) {
+    return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  // ── GET DUE DATE STRING ──
+  function getDueDate(index, plan) {
+    const now = new Date();
+    const d = new Date(now);
+    if (plan === 12) {
+      d.setMonth(d.getMonth() + index);
+    } else {
+      d.setDate(d.getDate() + index * 14);
+    }
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  // ── CALCULATE ──
+  function calculate() {
+    const raw = parseFloat(amountInput.value);
+
+    // Update plan per-payment previews
+    [4, 6, 12].forEach(n => {
+      const el = document.getElementById('plan' + n + 'amount');
+      if (!isNaN(raw) && raw > 0) {
+        el.textContent = fmt(raw / n);
+      } else {
+        el.textContent = '—';
+      }
+    });
+
+    if (isNaN(raw) || raw <= 0) {
+      emptyState.style.display = '';
+      resultsContent.style.display = 'none';
+      return;
+    }
+
+    const total    = raw;
+    const count    = selectedPlan;
+    const payment  = total / count;
+
+    // Show results
+    emptyState.style.display = 'none';
+    resultsContent.style.display = 'flex';
+    resultsContent.classList.add('animate-in');
+
+    // Summary
+    document.getElementById('summaryAmount').textContent = fmt(payment);
+    document.getElementById('summarySub').textContent    = 'first of ' + count + ' payments';
+    document.getElementById('metaTotal').textContent     = fmt(total);
+    document.getElementById('metaCount').textContent     = count;
+    document.getElementById('scheduleTotal').textContent = 'Total: ' + fmt(total);
+
+    // Schedule
+    const list = document.getElementById('scheduleList');
+    list.innerHTML = '';
+
+    for (let i = 0; i < count; i++) {
+      const row = document.createElement('div');
+      row.className = 'schedule-row' + (i === 0 ? ' first-row' : '');
+
+      const isToday = i === 0;
+      const dateStr = isToday ? 'Today' : getDueDate(i, count);
+      const fullDate = isToday ? getDueDate(0, count) : '';
+
+      row.innerHTML = `
+        <div class="payment-num">${i + 1}</div>
+        <div class="payment-date">
+          <strong>${dateStr}</strong>
+          ${fullDate ? '<span>' + fullDate + '</span>' : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="payment-amount">${fmt(payment)}</div>
+          <span class="payment-tag ${isToday ? 'tag-today' : 'tag-upcoming'}">${isToday ? 'Due now' : 'Upcoming'}</span>
+        </div>
+      `;
+      list.appendChild(row);
+    }
+  }
+
+  // Init
+  calculate();
+</script>
+</body>
+</html>
